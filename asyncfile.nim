@@ -25,15 +25,19 @@ elif asyncBackend == "chronos":
   proc close*(f: AsyncFile) {.raises: [OSError].}
     ## Closes the file specified.
 
-  proc getFilePos*(f: AsyncFile): int64 {.raises: [].}
+  proc getFilePos*(f: AsyncFile): int64 {.raises: [].} =
     ## Retrieves the current position of the file pointer that is used to read
     ## from the specified file. The file's first byte has the index zero.
+    f.offset
 
-  proc getFileSize*(f: AsyncFile): int64 {.raises: [].}
+  proc getFileSize*(f: AsyncFile): int64 {.raises: [OSError].}
     ## Retrieves the specified file's size.
 
-  proc newAsyncFile*(fd: AsyncFD): AsyncFile {.raises: [OSError].}
+  proc newAsyncFile*(fd: AsyncFD): AsyncFile {.raises: [OSError].} =
     ## Creates `AsyncFile` with a previously opened file descriptor `fd`.
+    new result
+    result.fd = fd
+    register(fd)
 
   when HasPath:
     proc openAsync*(filename: Path; mode = fmRead): AsyncFile {.raises: [OSError].}
@@ -44,15 +48,21 @@ elif asyncBackend == "chronos":
     ## Opens a file specified by the path in `filename` using the specified
     ## FileMode `mode` asynchronously.
 
-  proc read*(f: AsyncFile; size: Natural): Future[string]
+  proc read*(f: AsyncFile; size: Natural): Future[string] {.gcsafe.}
     ## Read `size` bytes from the specified file asynchronously starting at the
     ## current position of the file pointer.
     ##
     ## If the file pointer is past the end of the file then an empty string is
     ## returned.
 
-  proc readAll*(f: AsyncFile): Future[string]
+  proc readAll*(f: AsyncFile): Future[string] {.async.} =
     ## Reads all data from the specified file.
+    result = ""
+    while true:
+      let data = await read(f, 4000)
+      if data.len == 0:
+        return
+      result.add data
 
   proc readBuffer*(f: AsyncFile; buf: pointer; size: int): Future[int]
     ## Read `size` bytes from the specified file asynchronously starting at the
@@ -61,8 +71,18 @@ elif asyncBackend == "chronos":
     ## If the file pointer is past the end of the file then zero is returned
     ## and no bytes are read into `buf`.
 
-  proc readLine*(f: AsyncFile): Future[string]
+  proc readLine*(f: AsyncFile): Future[string] {.async.} =
     ## Reads a single line from the specified file asynchronously.
+    result = ""
+    while true:
+      var c = await read(f, 1)
+      if c[0] == '\c':
+        c = await read(f, 1)
+        break
+      if c[0] == '\L' or c == "":
+        break
+      else:
+        result.add(c)
 
   # TODO
   #proc readToStream*(f: AsyncFile; fs: FutureStream[string]): Future[void]
@@ -91,7 +111,6 @@ elif asyncBackend == "chronos":
   #  ## This procedure is perfect for saving streamed data to a file without wasting memory.
 
   when defined(windows):
-    {.error: "Windows support is not implemented.".}
     include ./asyncfile/impl/windows
   else:
     include ./asyncfile/impl/posix

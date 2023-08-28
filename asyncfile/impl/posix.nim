@@ -31,11 +31,6 @@ proc getFileSize(f: AsyncFile): int64 =
   f.offset = lseek(f.fd.cint, curPos, SEEK_SET)
   assert(f.offset == curPos)
 
-proc newAsyncFile(fd: AsyncFD): AsyncFile =
-  new result
-  result.fd = fd
-  register(fd)
-
 template openAsyncImpl(filename: string, mode: FileMode): AsyncFile =
   let flags = getPosixFlags(mode)
   # RW (Owner), RW (Group), R (Other)
@@ -113,40 +108,11 @@ proc read(f: AsyncFile, size: Natural): Future[string] =
 
   return retFuture
 
-proc readLineImpl(f: AsyncFile): Future[string] {.async.} =
-  result = ""
-  while true:
-    var c = await read(f, 1)
-    if c[0] == '\c':
-      c = await read(f, 1)
-      break
-    if c[0] == '\L' or c == "":
-      break
-    else:
-      result.add(c)
-
-proc readLine(f: AsyncFile): Future[string] =
-  readLineImpl(f)
-
-proc getFilePos(f: AsyncFile): int64 =
-  f.offset
-
 proc setFilePos(f: AsyncFile, pos: int64) =
   f.offset = pos
   let ret = lseek(f.fd.cint, pos.Off, SEEK_SET)
   if ret == -1:
     raiseOSError(osLastError())
-
-proc readAllImpl(f: AsyncFile): Future[string] {.async.} =
-  result = ""
-  while true:
-    let data = await read(f, 4000)
-    if data.len == 0:
-      return
-    result.add data
-
-proc readAll(f: AsyncFile): Future[string] =
-  readAllImpl(f)
 
 proc writeBuffer(f: AsyncFile, buf: pointer, size: int): Future[void] =
   var retFuture = newFuture[void]("asyncfile.writeBuffer")

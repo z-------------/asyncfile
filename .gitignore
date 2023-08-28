@@ -3,6 +3,7 @@ nim.cfg
 
 *.out
 example.nim
+example.nims
 htmldocs
 
 .vscode
