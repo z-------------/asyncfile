@@ -1,0 +1,8 @@
+nim.cfg
+*.nim.cfg
+
+*.out
+example.nim
+htmldocs
+
+.vscode
