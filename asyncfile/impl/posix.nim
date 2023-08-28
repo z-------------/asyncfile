@@ -36,18 +36,21 @@ proc newAsyncFile(fd: AsyncFD): AsyncFile =
   result.fd = fd
   register(fd)
 
-proc openAsync(filename: Path or string, mode = fmRead): AsyncFile =
-  template filenameStr: string =
-    when filename is string: filename
-    else: string(filename)
+template openAsyncImpl(filename: string, mode: FileMode): AsyncFile =
   let flags = getPosixFlags(mode)
   # RW (Owner), RW (Group), R (Other)
   let perm = S_IRUSR or S_IWUSR or S_IRGRP or S_IWGRP or S_IROTH
-  let fd = open(filenameStr.cstring, flags, perm)
+  let fd = open(cstring(filename), flags, perm)
   if fd == -1:
     raiseOSError(osLastError())
+  newAsyncFile(fd.AsyncFD)
 
-  result = newAsyncFile(fd.AsyncFD)
+when HasPath:
+  proc openAsync(filename: Path; mode: FileMode): AsyncFile =
+    openAsyncImpl(string(filename), mode)
+
+proc openAsync(filename: string; mode: FileMode): AsyncFile =
+  openAsyncImpl(filename, mode)
 
 proc readBuffer(f: AsyncFile, buf: pointer, size: int): Future[int] =
   var retFuture = newFuture[int]("asyncfile.readBuffer")

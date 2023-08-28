@@ -6,9 +6,10 @@ when asyncBackend == "asyncdispatch":
 elif asyncBackend == "chronos":
   import pkg/chronos
   when (NimMajor, NimMinor) >= (1, 9):
+    const HasPath = true
     import std/paths
   else:
-    type Path = string
+    const HasPath = false
 
   type
     AsyncFile* = ref object
@@ -28,7 +29,12 @@ elif asyncBackend == "chronos":
   proc newAsyncFile*(fd: AsyncFD): AsyncFile {.raises: [OSError].}
     ## Creates `AsyncFile` with a previously opened file descriptor `fd`.
 
-  proc openAsync*(filename: Path or string; mode = fmRead): AsyncFile {.raises: [OSError].}
+  when HasPath:
+    proc openAsync*(filename: Path; mode = fmRead): AsyncFile {.raises: [OSError].}
+      ## Opens a file specified by the path in `filename` using the specified
+      ## FileMode `mode` asynchronously.
+
+  proc openAsync*(filename: string; mode = fmRead): AsyncFile {.raises: [OSError].}
     ## Opens a file specified by the path in `filename` using the specified
     ## FileMode `mode` asynchronously.
 
