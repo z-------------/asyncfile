@@ -1,11 +1,14 @@
-const Backend {.define: "asyncBackend".} = "asyncdispatch"
+const asyncBackend {.strdefine.} = "asyncdispatch"
 
-when Backend == "asyncdispatch":
+when asyncBackend == "asyncdispatch":
   import std/asyncfile
   export asyncfile
-elif Backend == "chronos":
+elif asyncBackend == "chronos":
   import pkg/chronos
-  import std/paths
+  when (NimMajor, NimMinor) >= (1, 9):
+    import std/paths
+  else:
+    type Path = string
 
   type
     AsyncFile* = ref object
@@ -60,12 +63,12 @@ elif Backend == "chronos":
     ## Set a file length.
 
   proc write*(f: AsyncFile; data: string): Future[void]
-    ## Writes data to the file specified asynchronously.
+    ## Writes `data` to the file specified asynchronously.
     ##
     ## The returned Future will complete once all data has been written to the specified file.
 
   proc writeBuffer*(f: AsyncFile; buf: pointer; size: int): Future[void]
-    ## Writes size bytes from buf to the file specified asynchronously.
+    ## Writes `size` bytes from `buf` to the file specified asynchronously.
     ##
     ## The returned Future will complete once all data has been written to the specified file.
 
@@ -75,9 +78,8 @@ elif Backend == "chronos":
   #  ##
   #  ## This procedure is perfect for saving streamed data to a file without wasting memory.
 
-  when not defined(nimdoc):
-    when defined(windows):
-      {.error: "Windows support is not implemented.".}
-      include ./asyncfile/impl/windows
-    else:
-      include ./asyncfile/impl/posix
+  when defined(windows):
+    {.error: "Windows support is not implemented.".}
+    include ./asyncfile/impl/windows
+  else:
+    include ./asyncfile/impl/posix
