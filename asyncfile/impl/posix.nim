@@ -1,4 +1,4 @@
-# This file is based on the Posix part of the Nim standard library's
+# This file is based on the Posix parts of the Nim standard library's
 # std/asyncfile module. It has been modified to work with Chronos.
 #
 #

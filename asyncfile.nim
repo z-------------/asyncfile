@@ -1,3 +1,9 @@
+## Asynchronous file reading and writing.
+##
+## When `asyncBackend` is undefined or set to `"asyncdispatch"`, simply
+## re-exports std/asyncfile. When `asyncBackend` is `"chronos"`, implements the
+## same API for Chronos.
+
 const asyncBackend {.strdefine.} = "asyncdispatch"
 
 when asyncBackend == "asyncdispatch":
