@@ -15,20 +15,20 @@ elif asyncBackend == "chronos":
       fd: AsyncFD
       offset: int64
 
-  proc close*(f: AsyncFile)
+  proc close*(f: AsyncFile) {.raises: [OSError].}
     ## Closes the file specified.
 
-  proc getFilePos*(f: AsyncFile): int64
+  proc getFilePos*(f: AsyncFile): int64 {.raises: [].}
     ## Retrieves the current position of the file pointer that is used to read
     ## from the specified file. The file's first byte has the index zero.
 
-  proc getFileSize*(f: AsyncFile): int64
+  proc getFileSize*(f: AsyncFile): int64 {.raises: [].}
     ## Retrieves the specified file's size.
 
-  proc newAsyncFile*(fd: AsyncFD): AsyncFile
+  proc newAsyncFile*(fd: AsyncFD): AsyncFile {.raises: [OSError].}
     ## Creates `AsyncFile` with a previously opened file descriptor `fd`.
 
-  proc openAsync*(filename: Path or string; mode = fmRead): AsyncFile
+  proc openAsync*(filename: Path or string; mode = fmRead): AsyncFile {.raises: [OSError].}
     ## Opens a file specified by the path in `filename` using the specified
     ## FileMode `mode` asynchronously.
 
@@ -56,10 +56,10 @@ elif asyncBackend == "chronos":
   #proc readToStream*(f: AsyncFile; fs: FutureStream[string]): Future[void]
   #  ## Writes data to the specified future stream as the file is read.
 
-  proc setFilePos*(f: AsyncFile; pos: int64)
+  proc setFilePos*(f: AsyncFile; pos: int64) {.raises: [OSError].}
     ## Sets the position of the file pointer that is used for read/write operations. The file's first byte has the index zero.
 
-  proc setFileSize*(f: AsyncFile; length: int64)
+  proc setFileSize*(f: AsyncFile; length: int64) {.raises: [OSError].}
     ## Set a file length.
 
   proc write*(f: AsyncFile; data: string): Future[void]
