@@ -20,7 +20,7 @@ from std/winlean import
   FILE_ATTRIBUTE_NORMAL,
   ERROR_HANDLE_EOF, NO_ERROR
 
-func newCustom*(): RefCustomOverlapped {.raises: [].} =
+func newCustom(): RefCustomOverlapped {.raises: [].} =
   result = RefCustomOverlapped()
   GC_ref(result)
 
