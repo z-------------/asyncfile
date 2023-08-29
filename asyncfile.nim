@@ -64,7 +64,7 @@ elif asyncBackend == "chronos":
         return
       result.add data
 
-  proc readBuffer*(f: AsyncFile; buf: pointer; size: int): Future[int]
+  proc readBuffer*(f: AsyncFile; buf: pointer; size: int): Future[int] {.gcsafe.}
     ## Read `size` bytes from the specified file asynchronously starting at the
     ## current position of the file pointer.
     ##
