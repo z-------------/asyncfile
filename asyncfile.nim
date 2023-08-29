@@ -84,16 +84,15 @@ elif asyncBackend == "chronos":
       else:
         result.add(c)
 
-  # TODO
-  #proc readToStream*(f: AsyncFile, fs: FutureStream[string]) {.async.} =
-  #  ## Writes data to the specified future stream as the file is read.
-  #  while true:
-  #    let data = await read(f, 4000)
-  #    if data.len == 0:
-  #      break
-  #    await fs.write(data)
-  #
-  #  fs.complete()
+  proc readToStream*(f: AsyncFile, fs: AsyncStreamWriter) {.async.} =
+    ## Writes data to the specified future stream as the file is read.
+    var buf = default array[AsyncStreamDefaultBufferSize, byte]
+    while true:
+      let count = await f.readBuffer(addr buf[0], buf.len)
+      if count == 0:
+        break
+      await fs.write(addr buf[0], count)
+    await fs.finish()
 
   proc setFilePos*(f: AsyncFile; pos: int64) {.raises: [OSError].}
     ## Sets the position of the file pointer that is used for read/write operations. The file's first byte has the index zero.
