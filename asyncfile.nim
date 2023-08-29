@@ -85,8 +85,15 @@ elif asyncBackend == "chronos":
         result.add(c)
 
   # TODO
-  #proc readToStream*(f: AsyncFile; fs: FutureStream[string]): Future[void]
+  #proc readToStream*(f: AsyncFile, fs: FutureStream[string]) {.async.} =
   #  ## Writes data to the specified future stream as the file is read.
+  #  while true:
+  #    let data = await read(f, 4000)
+  #    if data.len == 0:
+  #      break
+  #    await fs.write(data)
+  #
+  #  fs.complete()
 
   proc setFilePos*(f: AsyncFile; pos: int64) {.raises: [OSError].}
     ## Sets the position of the file pointer that is used for read/write operations. The file's first byte has the index zero.
@@ -99,16 +106,17 @@ elif asyncBackend == "chronos":
     ##
     ## The returned Future will complete once all data has been written to the specified file.
 
-  proc writeBuffer*(f: AsyncFile; buf: pointer; size: int): Future[void]
+  proc writeBuffer*(f: AsyncFile; buf: pointer; size: int): Future[void] {.gcsafe.}
     ## Writes `size` bytes from `buf` to the file specified asynchronously.
     ##
     ## The returned Future will complete once all data has been written to the specified file.
 
-  # TODO
-  #proc writeFromStream(f: AsyncFile; fs: FutureStream[string]): Future[void]
-  #  ## Reads data from the specified future stream until it is completed. The data which is read is written to the file immediately and freed from memory.
-  #  ##
-  #  ## This procedure is perfect for saving streamed data to a file without wasting memory.
+  proc writeFromStream*(f: AsyncFile, fs: AsyncStreamReader) {.async.} =
+    ## Reads data from the specified future stream until it is completed.
+    var buf = default array[AsyncStreamDefaultBufferSize, byte]
+    while not fs.atEof:
+      let count = await fs.readOnce(addr buf[0], buf.len)
+      await f.writeBuffer(addr buf[0], count)
 
   when defined(windows):
     include ./asyncfile/impl/windows

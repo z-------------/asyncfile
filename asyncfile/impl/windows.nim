@@ -308,27 +308,3 @@ proc close(f: AsyncFile) =
   unregister(f.fd)
   if not closeHandle(f.fd.Handle).bool:
     raiseOSError(osLastError())
-
-# proc writeFromStream(f: AsyncFile, fs: FutureStream[string]) {.async.} =
-#   ## Reads data from the specified future stream until it is completed.
-#   ## The data which is read is written to the file immediately and
-#   ## freed from memory.
-#   ##
-#   ## This procedure is perfect for saving streamed data to a file without
-#   ## wasting memory.
-#   while true:
-#     let (hasValue, value) = await fs.read()
-#     if hasValue:
-#       await f.write(value)
-#     else:
-#       break
-
-# proc readToStream(f: AsyncFile, fs: FutureStream[string]) {.async.} =
-#   ## Writes data to the specified future stream as the file is read.
-#   while true:
-#     let data = await read(f, 4000)
-#     if data.len == 0:
-#       break
-#     await fs.write(data)
-
-#   fs.complete()

@@ -195,20 +195,3 @@ proc close(f: AsyncFile) =
   unregister(f.fd)
   if close(f.fd.cint) == -1:
     raiseOSError(osLastError())
-
-#proc writeFromStream(f: AsyncFile, fs: FutureStream[string]) {.async.} =
-#  while true:
-#    let (hasValue, value) = await fs.read()
-#    if hasValue:
-#      await f.write(value)
-#    else:
-#      break
-#
-#proc readToStream(f: AsyncFile, fs: FutureStream[string]) {.async.} =
-#  while true:
-#    let data = await read(f, 4000)
-#    if data.len == 0:
-#      break
-#    await fs.write(data)
-#
-#  fs.complete()
