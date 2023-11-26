@@ -48,7 +48,7 @@ elif asyncBackend == "chronos":
     ## Opens a file specified by the path in `filename` using the specified
     ## FileMode `mode` asynchronously.
 
-  proc read*(f: AsyncFile; size: Natural): Future[string] {.gcsafe.}
+  proc read*(f: AsyncFile; size: Natural): Future[string] {.gcsafe, raises: [OSError].}
     ## Read `size` bytes from the specified file asynchronously starting at the
     ## current position of the file pointer.
     ##
@@ -64,7 +64,7 @@ elif asyncBackend == "chronos":
         return
       result.add data
 
-  proc readBuffer*(f: AsyncFile; buf: pointer; size: int): Future[int] {.gcsafe.}
+  proc readBuffer*(f: AsyncFile; buf: pointer; size: int): Future[int] {.gcsafe, raises: [OSError].}
     ## Read `size` bytes from the specified file asynchronously starting at the
     ## current position of the file pointer.
     ##
@@ -105,7 +105,7 @@ elif asyncBackend == "chronos":
     ##
     ## The returned Future will complete once all data has been written to the specified file.
 
-  proc writeBuffer*(f: AsyncFile; buf: pointer; size: int): Future[void] {.gcsafe.}
+  proc writeBuffer*(f: AsyncFile; buf: pointer; size: int): Future[void] {.gcsafe, raises: [OSError].}
     ## Writes `size` bytes from `buf` to the file specified asynchronously.
     ##
     ## The returned Future will complete once all data has been written to the specified file.
